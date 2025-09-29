@@ -3,27 +3,6 @@ local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
--- 🟢 Whitelist UserIds (giả lập HWID)
-local whitelist = {
-    3779522767, -- Thay bằng UserId của bạn
-    3891512754, -- Thêm UserId người được phép
-}
-
--- 🛑 Check HWID access
-local allowed = false
-for _, id in ipairs(whitelist) do
-    if player.UserId == id then
-        allowed = true
-        break
-    end
-end
-
-if not allowed then
-    -- Kick the player if they do not have HWID access
-    player:Kick("❌ You do not have access if you do not have the correct HWID!")
-    return
-end
-
 -- 🟢 Access Codes
 local accessCodes = {
     "vlRPlUJMfn0cWZ6i7U8eAn5kNSw0Q0JntvQNYGyyFYLU4IxxJH0AAA2",
