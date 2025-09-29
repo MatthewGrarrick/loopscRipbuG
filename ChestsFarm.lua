@@ -162,9 +162,7 @@ local function hopServer()
     local accesscode
     repeat
         attempt = attempt + 1
-        accesscode = accessCodes[math.random(1, #accessCodes)]
-    until not recentServers[accesscode] or attempt > 10
-
+       
     recentServers[accesscode] = true
 
     task.delay(recentServerTimer, function()
