@@ -6,7 +6,7 @@ local player = Players.LocalPlayer
 -- 🟢 Whitelist UserIds (giả lập HWID)
 local whitelist = {
     3779522767, -- Thay bằng UserId của bạn
-    122222222, -- Thêm UserId người được phép
+    3891512754, -- Thêm UserId người được phép
 }
 
 -- 🛑 Check HWID access
