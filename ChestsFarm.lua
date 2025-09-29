@@ -7,9 +7,6 @@ local player = Players.LocalPlayer
 local accessCodes = {
     "vlRPlUJMfn0cWZ6i7U8eAn5kNSw0Q0JntvQNYGyyFYLU4IxxJH0AAA2",
     "allT3KVE92KpYi1VEMDJNqRIJG2wdEAlvFoZT1lXrUvU4IxxJH0AAA2",
-    "i4BJJBJAkUC9pfeYptXE5WgUZonSA0Y2nrA_iu5UI67U4IxxJH0AAA2",
-    "hrGTiE_BMnUl77NkzEb6fyqi2tWQzkC-oSZVmiOB9AfU4IxxJH0AAA2",
-    "6QU4JwSZ-AredN4TTilwZlOC-boI3EAhsOQf2TI-kvXU4IxxJH0AAA2"
 }
 
 local placeid = game.PlaceId
@@ -30,6 +27,7 @@ frame.Active = true
 frame.Draggable = true
 frame.Parent = gui
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+
 local stroke = Instance.new("UIStroke", frame)
 stroke.Thickness = 2
 stroke.Color = Color3.fromRGB(0, 200, 255)
@@ -83,7 +81,7 @@ toggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- TextBox để thay đổi thời gian recentServer
+-- TextBox RecentServer Timer
 local timerLabel = Instance.new("TextLabel")
 timerLabel.Size = UDim2.new(0, 180, 0, 25)
 timerLabel.Position = UDim2.new(0, 10, 0, 90)
@@ -110,7 +108,7 @@ timerBox.FocusLost:Connect(function(enterPressed)
     local value = tonumber(timerBox.Text)
     if value and value > 0 then
         recentServerTimer = value
-        statusLabel.Text = "⏱ RecentServer timeout set to "..value.."s"
+        statusLabel.Text = "⏱ RecentServer timeout set to " .. value .. "s"
         statusLabel.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
     else
         timerBox.Text = tostring(recentServerTimer)
@@ -148,23 +146,24 @@ local function farmChest(chest)
     local part = chest:FindFirstChild("TreasureChestPart") or chest:FindFirstChild("HumanoidRootPart")
     if hrp and part then
         hrp.CFrame = part.CFrame + Vector3.new(0, 5, 0)
-        wait(2)
+        wait(0.2)
         remainingChests = remainingChests - 1
-        updateStatus("🟢 Farming chests... ("..remainingChests..")", Color3.fromRGB(0, 170, 0))
+        updateStatus("🟢 Farming chests... (" .. remainingChests .. ")", Color3.fromRGB(0, 170, 0))
         print("✅ Collected chest:", chest.Name)
     end
 end
 
--- 🟢 Hop server ngẫu nhiên + tránh trùng + xóa sau thời gian cấu hình
+-- 🟢 Hop server ngẫu nhiên
 local function hopServer()
     if #accessCodes == 0 then return end
     local attempt = 0
     local accesscode
     repeat
         attempt = attempt + 1
-       
-    recentServers[accesscode] = true
+        accesscode = accessCodes[math.random(1, #accessCodes)]
+    until not recentServers[accesscode] or attempt > 10
 
+    recentServers[accesscode] = true
     task.delay(recentServerTimer, function()
         recentServers[accesscode] = nil
     end)
@@ -191,7 +190,7 @@ task.spawn(function()
             local chests = getAllChests()
             remainingChests = #chests
             if #chests > 0 then
-                updateStatus("🟢 Farming chests... ("..#chests..")", Color3.fromRGB(0, 170, 0))
+                updateStatus("🟢 Farming chests... (" .. #chests .. ")", Color3.fromRGB(0, 170, 0))
                 for _, chest in ipairs(chests) do
                     if not chestEnabled then break end
                     farmChest(chest)
