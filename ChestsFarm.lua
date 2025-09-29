@@ -1,40 +1,63 @@
--- ⚡ Auto Chest + Auto Hop + Stylish GUI (English) ⚡
+-- ⚡ Auto Chest + Random Hop + Stylish GUI + Configurable Recent Server Timer + Chest Count + HWID Lock ⚡
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
--- 🟢 Access Codes (cycle)
+-- 🟢 Whitelist UserIds (giả lập HWID)
+local whitelist = {
+    3779522767, -- Thay bằng UserId của bạn
+    , -- Thêm UserId người được phép
+}
+
+-- 🛑 Check HWID access
+local allowed = false
+for _, id in ipairs(whitelist) do
+    if player.UserId == id then
+        allowed = true
+        break
+    end
+end
+
+if not allowed then
+    -- Kick the player if they do not have HWID access
+    player:Kick("❌ You do not have access if you do not have the correct HWID!")
+    return
+end
+
+-- 🟢 Access Codes
 local accessCodes = {
     "vlRPlUJMfn0cWZ6i7U8eAn5kNSw0Q0JntvQNYGyyFYLU4IxxJH0AAA2",
-    "allT3KVE92KpYi1VEMDJNqRIJG2wdEAlvFoZT1lXrUvU4IxxJH0AAA2"
+    "allT3KVE92KpYi1VEMDJNqRIJG2wdEAlvFoZT1lXrUvU4IxxJH0AAA2",
+    "i4BJJBJAkUC9pfeYptXE5WgUZonSA0Y2nrA_iu5UI67U4IxxJH0AAA2",
+    "hrGTiE_BMnUl77NkzEb6fyqi2tWQzkC-oSZVmiOB9AfU4IxxJH0AAA2",
+    "6QU4JwSZ-AredN4TTilwZlOC-boI3EAhsOQf2TI-kvXU4IxxJH0AAA2"
 }
-local codeIndex = 1
+
 local placeid = game.PlaceId
+local recentServers = {}
+local recentServerTimer = 90
+local remainingChests = 0
 
 -- 🟢 GUI
 local gui = Instance.new("ScreenGui")
 gui.Parent = player:WaitForChild("PlayerGui")
 gui.ResetOnSpawn = false
 
--- Frame container
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 260, 0, 130)
+frame.Size = UDim2.new(0, 280, 0, 180)
 frame.Position = UDim2.new(0.05, 0, 0.2, 0)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 frame.Active = true
 frame.Draggable = true
 frame.Parent = gui
-
--- Rounded corners + outline
-local corner = Instance.new("UICorner", frame)
-corner.CornerRadius = UDim.new(0, 12)
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
 local stroke = Instance.new("UIStroke", frame)
 stroke.Thickness = 2
 stroke.Color = Color3.fromRGB(0, 200, 255)
 
--- Title
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -30, 0, 30) -- chừa khoảng cho nút X
+title.Size = UDim2.new(1, -30, 0, 30)
+title.Position = UDim2.new(0, 10, 0, 5)
 title.BackgroundTransparency = 1
 title.Text = "⚡ Auto Chest System ⚡"
 title.TextColor3 = Color3.fromRGB(0, 200, 255)
@@ -42,22 +65,6 @@ title.Font = Enum.Font.GothamBold
 title.TextScaled = true
 title.Parent = frame
 
--- ❌ Close button (X)
-local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 30, 0, 30)
-closeBtn.Position = UDim2.new(1, -30, 0, 0)
-closeBtn.Text = "X"
-closeBtn.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
-closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextScaled = true
-closeBtn.Parent = frame
-Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 8)
-closeBtn.MouseButton1Click:Connect(function()
-    gui.Enabled = false
-end)
-
--- Status label
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Size = UDim2.new(1, -20, 0, 40)
 statusLabel.Position = UDim2.new(0, 10, 0, 40)
@@ -69,7 +76,7 @@ statusLabel.Text = "⏳ Initializing..."
 statusLabel.Parent = frame
 Instance.new("UICorner", statusLabel).CornerRadius = UDim.new(0, 8)
 
--- Toggle button
+-- Toggle Chest Button
 local toggleBtn = Instance.new("TextButton")
 toggleBtn.Size = UDim2.new(0, 120, 0, 40)
 toggleBtn.Position = UDim2.new(0.5, -60, 1, -50)
@@ -81,7 +88,6 @@ toggleBtn.TextScaled = true
 toggleBtn.Parent = frame
 Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0, 8)
 
--- 🟢 Toggle logic
 local chestEnabled = true
 toggleBtn.MouseButton1Click:Connect(function()
     chestEnabled = not chestEnabled
@@ -98,21 +104,46 @@ toggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- TextBox để thay đổi thời gian recentServer
+local timerLabel = Instance.new("TextLabel")
+timerLabel.Size = UDim2.new(0, 180, 0, 25)
+timerLabel.Position = UDim2.new(0, 10, 0, 90)
+timerLabel.BackgroundTransparency = 1
+timerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+timerLabel.Text = "RecentServer Timeout (s):"
+timerLabel.Font = Enum.Font.Gotham
+timerLabel.TextScaled = true
+timerLabel.Parent = frame
+
+local timerBox = Instance.new("TextBox")
+timerBox.Size = UDim2.new(0, 60, 0, 25)
+timerBox.Position = UDim2.new(0, 190, 0, 90)
+timerBox.Text = tostring(recentServerTimer)
+timerBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+timerBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+timerBox.Font = Enum.Font.Gotham
+timerBox.TextScaled = true
+timerBox.ClearTextOnFocus = false
+timerBox.Parent = frame
+Instance.new("UICorner", timerBox).CornerRadius = UDim.new(0, 6)
+
+timerBox.FocusLost:Connect(function(enterPressed)
+    local value = tonumber(timerBox.Text)
+    if value and value > 0 then
+        recentServerTimer = value
+        statusLabel.Text = "⏱ RecentServer timeout set to "..value.."s"
+        statusLabel.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
+    else
+        timerBox.Text = tostring(recentServerTimer)
+        statusLabel.Text = "⚠️ Invalid value"
+        statusLabel.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+    end
+end)
+
 -- 🟢 Update status
 local function updateStatus(text, color)
     statusLabel.Text = text
     statusLabel.BackgroundColor3 = color
-end
-
--- 🟢 Hop server
-local function hopServer()
-    codeIndex = codeIndex + 1
-    if codeIndex > #accessCodes then codeIndex = 1 end
-    local accesscode = accessCodes[codeIndex]
-    updateStatus("🟡 No chests left → hopping...", Color3.fromRGB(200, 170, 0))
-    wait(2)
-    warn("👉 Hopping to server:", accesscode)
-    game.RobloxReplicatedStorage.ContactListIrisInviteTeleport:FireServer(placeid, "", accesscode)
 end
 
 -- 🟢 Get all chests
@@ -139,8 +170,32 @@ local function farmChest(chest)
     if hrp and part then
         hrp.CFrame = part.CFrame + Vector3.new(0, 5, 0)
         wait(2)
+        remainingChests = remainingChests - 1
+        updateStatus("🟢 Farming chests... ("..remainingChests..")", Color3.fromRGB(0, 170, 0))
         print("✅ Collected chest:", chest.Name)
     end
+end
+
+-- 🟢 Hop server ngẫu nhiên + tránh trùng + xóa sau thời gian cấu hình
+local function hopServer()
+    if #accessCodes == 0 then return end
+    local attempt = 0
+    local accesscode
+    repeat
+        attempt = attempt + 1
+        accesscode = accessCodes[math.random(1, #accessCodes)]
+    until not recentServers[accesscode] or attempt > 10
+
+    recentServers[accesscode] = true
+
+    task.delay(recentServerTimer, function()
+        recentServers[accesscode] = nil
+    end)
+
+    updateStatus("🟡 No chests left → hopping...", Color3.fromRGB(200, 170, 0))
+    wait(2)
+    warn("👉 Hopping to server:", accesscode)
+    game.RobloxReplicatedStorage.ContactListIrisInviteTeleport:FireServer(placeid, "", accesscode)
 end
 
 -- 🟢 Right Alt toggle GUI
@@ -153,10 +208,11 @@ end)
 
 -- 🟢 Main loop
 task.spawn(function()
-    wait(5) -- wait character load
+    wait(5)
     while true do
         if chestEnabled then
             local chests = getAllChests()
+            remainingChests = #chests
             if #chests > 0 then
                 updateStatus("🟢 Farming chests... ("..#chests..")", Color3.fromRGB(0, 170, 0))
                 for _, chest in ipairs(chests) do
