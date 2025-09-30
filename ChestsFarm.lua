@@ -199,30 +199,14 @@ local function getAllChests()
     return chestList
 end
 
--- 🟢 Farm chest (zigzag trước, random 2-4s để lụm)
+-- 🟢 Farm chest (, random 2-4s để lụm)
 local function farmChest(chest)
     local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
     local part = chest:FindFirstChild("TreasureChestPart") or chest:FindFirstChild("HumanoidRootPart")
     if hrp and part then
-        -- Zigzag (2 bước trái/phải với offset ngẫu nhiên nhỏ)
-        for i = 1, 2 do
-            if not chest or not chest.Parent then return end
-            local zx = (i % 2 == 0) and 4 or -4
-            local zz = math.random(-2, 2)
-            local offset = Vector3.new(zx, 0, zz)
-            hrp.CFrame = CFrame.new(part.Position + offset + Vector3.new(0, 3, 0))
-            task.wait(0.25 + math.random() * 0.3) -- ~0.25-0.55s
-        end
-
-        -- Đi thẳng tới chest (đứng phía trên)
-        if not chest or not chest.Parent then return end
         hrp.CFrame = CFrame.new(part.Position + Vector3.new(0, 5, 0))
-
-        -- Random time to "collect" chest: 2.000 -> 4.000 seconds
         local collectTime = math.random(3000, 5000) / 1000
         task.wait(collectTime)
-
-        -- Kiểm tra chest còn tồn tại trước khi cập nhật
         if chest and chest.Parent then
             remainingChests = math.max(0, remainingChests - 1)
             updateStatus("🟢 Farming chests... ("..remainingChests..")", Color3.fromRGB(0, 170, 0))
