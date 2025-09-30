@@ -67,7 +67,6 @@ local accessCodes = {
     "EnwMQnf8cE7945jbfX56io-EBOcnAE9CnR6IX_X781TU4IxxJH0AAA2",
     "2ni5_cR4bxd1fnB1GwwGfJm6fw6Z0kp9gxSErx3Bs0LU4IxxJH0AAA2",
     "vcuJ2qqQ8JmaxeHo0jQ5lVs7urggUkEChULBJ6r4PgDU4IxxJH0AAA2",
-	
 }
 
 local placeid = game.PlaceId
