@@ -219,7 +219,7 @@ local function farmChest(chest)
         hrp.CFrame = CFrame.new(part.Position + Vector3.new(0, 5, 0))
 
         -- Random time to "collect" chest: 2.000 -> 4.000 seconds
-        local collectTime = math.random(2000, 4000) / 1000
+        local collectTime = math.random(3000, 5000) / 1000
         task.wait(collectTime)
 
         -- Kiểm tra chest còn tồn tại trước khi cập nhật
