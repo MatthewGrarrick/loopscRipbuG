@@ -3,38 +3,6 @@ local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
--- 🟢 Whitelist UserIds (giả lập HWID)
-local whitelist = {
-    3779522767, -- Thay bằng UserId của bạn
-    3891789316,
-	2059019252,
-	2058645338,
-	2058763991,
-	2059003331,
-	2058755868,
-	2058540618,
-	2059323976,
-	2059436645,
-	2059298055,
-	2058954310,
-	4489612254, -- tphat
-}
-
--- 🛑 Check HWID access
-local allowed = false
-for _, id in ipairs(whitelist) do
-    if player.UserId == id then
-        allowed = true
-        break
-    end
-end
-
-if not allowed then
-    -- Kick the player if they do not have HWID access
-    player:Kick("❌ You do not have access if you do not have the correct HWID!")
-    return
-end
-
 -- 🟢 Access Codes
 local accessCodes = {
     "vlRPlUJMfn0cWZ6i7U8eAn5kNSw0Q0JntvQNYGyyFYLU4IxxJH0AAA2",
@@ -211,7 +179,7 @@ local function farmChest(chest)
     local part = chest:FindFirstChild("TreasureChestPart") or chest:FindFirstChild("HumanoidRootPart")
     if hrp and part then
         hrp.CFrame = CFrame.new(part.Position + Vector3.new(0, 5, 0))
-        local collectTime = math.random(3000, 5000) / 1000
+        local collectTime = math.random(2000, 4000) / 1000
         task.wait(collectTime)
         if chest and chest.Parent then
             remainingChests = math.max(0, remainingChests - 1)
