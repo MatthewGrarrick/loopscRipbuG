@@ -8,6 +8,7 @@ local humanoid = char:WaitForChild("Humanoid")
 local whitelist = {
     3779522767,
     2058617750,
+	2058763991,
 }
 
 local allowed = false
@@ -215,7 +216,7 @@ task.spawn(function()
             if tool then
                 for _, npc in pairs(npcs) do
                     if farming and npc:FindFirstChild("Humanoid") and npc.Humanoid.Health > 0 then
-                        hrp.CFrame = npc.HumanoidRootPart.CFrame * CFrame.new(0,0,5)
+                        hrp.CFrame = npc.HumanoidRootPart.CFrame * CFrame.new(0,0,3)
                         while farming and npc:FindFirstChild("Humanoid") and npc.Humanoid.Health > 0 and humanoid and humanoid.Parent do
                             tool:Activate()
                             task.wait(0.2)
@@ -235,3 +236,13 @@ end)
 
 -- Setup lần đầu
 setupCharacter(char)
+-- 🔥 Auto bật Haki bằng phím Q
+task.spawn(function()
+    while task.wait(5) do -- mỗi 5 giây bật lại 1 lần
+        if farming and humanoid and humanoid.Parent then
+            game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.Q, false, game)
+            task.wait(0.1)
+            game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.Q, false, game)
+        end
+    end
+end)
