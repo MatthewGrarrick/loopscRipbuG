@@ -9,6 +9,7 @@ local whitelist = {
     3779522767,
     2058617750,
 	2058763991,
+	6129034026,
 }
 
 local allowed = false
