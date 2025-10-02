@@ -208,7 +208,7 @@ local function getValidNPCs()
     return npcs
 end
 
--- Auto farm loop
+-- Auto farm loop fix
 task.spawn(function()
     while task.wait(0.5) do
         if farming and humanoid and hrp and weaponName then
