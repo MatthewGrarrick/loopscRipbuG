@@ -1,4 +1,3 @@
--- 📌 Auto Farm NPC + Kill Counter + GodMode + Respawn Fix + UI đẹp
 local player = game.Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local hrp = char:WaitForChild("HumanoidRootPart")
@@ -8,8 +7,9 @@ local humanoid = char:WaitForChild("Humanoid")
 local whitelist = {
     3779522767,
     2058617750,
-	2058763991,
-	6129034026,
+    2058763991,
+    6129034026,
+	8915705692,
 }
 
 local allowed = false
@@ -208,36 +208,41 @@ local function getValidNPCs()
     return npcs
 end
 
--- Auto farm loop fix
+-- ✅ Auto farm loop (đã fix: giết hết quái rồi lặp lại)
 task.spawn(function()
     while task.wait(0.5) do
         if farming and humanoid and hrp and weaponName then
             local tool = equipWeapon(weaponName)
             if tool then
                 local npcs = getValidNPCs()
-                if #npcs > 0 then
-                    -- Lấy con quái gần nhất
-                    table.sort(npcs, function(a,b)
-                        return (a.HumanoidRootPart.Position - hrp.Position).Magnitude <
-                               (b.HumanoidRootPart.Position - hrp.Position).Magnitude
-                    end)
 
-                    local npc = npcs[1]
-                    if npc and npc:FindFirstChild("Humanoid") and npc.Humanoid.Health > 0 then
+                -- Nếu chưa có NPC thì chờ NPC respawn
+                if #npcs == 0 then
+                    continue
+                end
+
+                -- Lặp qua tất cả NPC
+                for _, npc in pairs(npcs) do
+                    if farming and npc:FindFirstChild("Humanoid") and npc.Humanoid.Health > 0 then
+                        -- Teleport đến NPC
                         hrp.CFrame = npc.HumanoidRootPart.CFrame * CFrame.new(0,0,3)
-                        tool:Activate()
-                        -- Đánh quái nhưng không bị "kẹt" nếu nó chết -> loop sẽ tìm quái khác
-                        task.spawn(function()
-                            while farming and npc and npc:FindFirstChild("Humanoid") and npc.Humanoid.Health > 0 and humanoid and humanoid.Parent do
-                                tool:Activate()
-                                task.wait(0.2)
-                            end
-                            -- Nếu quái chết -> tăng kill
-                            if npc and npc:FindFirstChild("Humanoid") and npc.Humanoid.Health <= 0 then
-                                killCount += 1
-                                killLabel.Text = "Kills: "..killCount
-                            end
-                        end)
+
+                        -- Đánh liên tục cho đến khi NPC chết
+                        while farming 
+                        and npc 
+                        and npc:FindFirstChild("Humanoid") 
+                        and npc.Humanoid.Health > 0 
+                        and humanoid 
+                        and humanoid.Parent do
+                            tool:Activate()
+                            task.wait(0.2)
+                        end
+
+                        -- Khi NPC chết thì cộng kill
+                        if npc and npc:FindFirstChild("Humanoid") and npc.Humanoid.Health <= 0 then
+                            killCount += 1
+                            killLabel.Text = "Kills: "..killCount
+                        end
                     end
                 end
             else
@@ -246,8 +251,10 @@ task.spawn(function()
         end
     end
 end)
+
 -- Setup lần đầu
 setupCharacter(char)
+
 -- 🔥 Auto bật Haki bằng phím Q
 task.spawn(function()
     while task.wait(5) do -- mỗi 5 giây bật lại 1 lần
