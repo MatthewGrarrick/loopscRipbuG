@@ -1,3 +1,4 @@
+-- 📌 Auto Farm NPC + Kill Counter + GodMode + Respawn Fix + UI đẹp
 local player = game.Players.LocalPlayer
 local char = player.Character or player.CharacterAdded:Wait()
 local hrp = char:WaitForChild("HumanoidRootPart")
@@ -9,7 +10,6 @@ local whitelist = {
     2058617750,
     2058763991,
     6129034026,
-	8915705692,
 }
 
 local allowed = false
@@ -208,45 +208,52 @@ local function getValidNPCs()
     return npcs
 end
 
--- ✅ Auto farm loop (đã fix: giết hết quái rồi lặp lại)
+-- ⚡ Auto farm loop (ưu tiên NPC gần nhất + auto equip + loop vô hạn)
 task.spawn(function()
-    while task.wait(0.5) do
+    while task.wait(0.2) do
         if farming and humanoid and hrp and weaponName then
-            local tool = equipWeapon(weaponName)
-            if tool then
+            -- luôn auto equip weapon
+            local tool = player.Character:FindFirstChild(weaponName) or player.Backpack:FindFirstChild(weaponName)
+            if tool and tool.Parent == player.Backpack then
+                humanoid:EquipTool(tool)
+            end
+
+            if not tool then
+                warn("⚠ Không tìm thấy vũ khí: "..tostring(weaponName))
+                continue
+            end
+
+            -- tìm npc gần nhất
+            local npc = nil
+            while farming and not npc do
                 local npcs = getValidNPCs()
-
-                -- Nếu chưa có NPC thì chờ NPC respawn
-                if #npcs == 0 then
-                    continue
-                end
-
-                -- Lặp qua tất cả NPC
-                for _, npc in pairs(npcs) do
-                    if farming and npc:FindFirstChild("Humanoid") and npc.Humanoid.Health > 0 then
-                        -- Teleport đến NPC
-                        hrp.CFrame = npc.HumanoidRootPart.CFrame * CFrame.new(0,0,3)
-
-                        -- Đánh liên tục cho đến khi NPC chết
-                        while farming 
-                        and npc 
-                        and npc:FindFirstChild("Humanoid") 
-                        and npc.Humanoid.Health > 0 
-                        and humanoid 
-                        and humanoid.Parent do
-                            tool:Activate()
-                            task.wait(0.2)
-                        end
-
-                        -- Khi NPC chết thì cộng kill
-                        if npc and npc:FindFirstChild("Humanoid") and npc.Humanoid.Health <= 0 then
-                            killCount += 1
-                            killLabel.Text = "Kills: "..killCount
+                local nearest, dist = nil, math.huge
+                for _, v in pairs(npcs) do
+                    if v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
+                        local d = (v.HumanoidRootPart.Position - hrp.Position).Magnitude
+                        if d < dist then
+                            dist = d
+                            nearest = v
                         end
                     end
                 end
-            else
-                warn("⚠ Không tìm thấy vũ khí: "..weaponName)
+                npc = nearest
+                if not npc then task.wait(1) end
+            end
+
+            -- đánh npc
+            while farming and npc and npc:FindFirstChild("Humanoid") and npc.Humanoid.Health > 0 and humanoid and humanoid.Parent do
+                pcall(function()
+                    hrp.CFrame = npc.HumanoidRootPart.CFrame * CFrame.new(0,0,3)
+                    tool:Activate()
+                end)
+                task.wait(0.2)
+            end
+
+            -- cộng kill khi npc chết
+            if npc and npc:FindFirstChild("Humanoid") and npc.Humanoid.Health <= 0 then
+                killCount += 1
+                killLabel.Text = "Kills: "..killCount
             end
         end
     end
