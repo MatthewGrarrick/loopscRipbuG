@@ -34,6 +34,7 @@ local blacklist = {
     ["Lv198 Cave Demon"] = true,
     ["Lv200 Vokun"] = true,
     ["Lv219 Cave Demon"] = true,
+    ["Lv40 Cave Demon"] = true,
 }
 
 -- 🛡 Setup khi respawn
